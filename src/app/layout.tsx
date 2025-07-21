@@ -4,6 +4,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/app/components/AppSidebar";
+import NextTopLoader from 'nextjs-toploader';
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
 const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
@@ -21,6 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <AppSidebar />
           <main className="flex-1">
             {/* <SidebarTrigger/> */}
+            <NextTopLoader
+            color="oklch(0.208 0.042 265.755)"
+            />
             {children}
           </main>
         </SidebarProvider>
