@@ -18,28 +18,51 @@ import {
 } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { menuData } from "@/constants";
+import { toast } from "sonner";
+import { createMenuItemWithData } from "@/app/actions/menu-actions";
 
 const MenuAddingModalButton = () => {
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [status, setStatus] = useState<"Active" | "Inactive">("Active");
   const [open, setOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle form submission here
-    console.log({ name, amount: Number(amount), status });
-    // Reset form and close modal
-    menuData.push({id:"500", name, amount: Number(amount), status })
-    setName("");
-    setAmount("");
-    setStatus("Active");
-    setOpen(false);
+    setIsLoading(true);
+
+    try {
+      const result = await createMenuItemWithData({
+        name,
+        amount: Number(amount),
+        status,
+      });
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create menu item");
+      }
+
+      // Show success message
+      toast.success("Menu item added successfully!");
+
+      // Reset form and close modal
+      setName("");
+      setAmount("");
+      setStatus("Active");
+      setOpen(false);
+
+      // No need for manual refresh - revalidatePath handles this
+    } catch (error) {
+      console.error("Error creating menu item:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to add menu item. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
-    <Dialog open={open} onOpenChange={setOpen} >
+    <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="hover:cursor-pointer">
           <Plus className="w-4 h-4" />
@@ -93,10 +116,13 @@ const MenuAddingModalButton = () => {
               type="button"
               variant="outline"
               onClick={() => setOpen(false)}
+              disabled={isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit">Add Item</Button>
+            <Button type="submit" disabled={isLoading}>
+              {isLoading ? "Adding..." : "Add Item"}
+            </Button>
           </div>
         </form>
       </DialogContent>
